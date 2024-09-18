@@ -1,7 +1,9 @@
 node_modules/
 lib/
 test_script.js
-.env.test
+.env.dev
+.env.prod
+.env.pub
 .idea
 gui/discordbotgui/target/
 bot/
