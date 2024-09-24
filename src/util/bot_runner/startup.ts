@@ -161,7 +161,7 @@ class Startup {
 function init() {
     let instance = new Startup();
 
-    const startupEventFiles = readdirSync(join(__dirname, `./startup_commands`)).filter(file => file.endsWith('.js'));
+    const startupEventFiles = readdirSync(join(__dirname, `./startup_events`)).filter(file => file.endsWith('.js'));
     for (const file of startupEventFiles) {
         try {
             logger.log(`Reading event from file ${file}`, LogTarget.Info, "Startup");

@@ -3,6 +3,7 @@ import { exit } from "process";
 import { setEventHandlers } from "./util";
 import { initPerms } from "./util/permissions/permissions";
 import { instance as logger } from "./util/logger/logger";
+import startup from "./util/bot_runner/startup";
 import { LogTarget } from "./types/logging";
 
 const TOKEN = process.env.TOKEN || "NO_TOKEN_PROVIDED";
@@ -32,5 +33,7 @@ if (!client) {
 let checkPerms;
 if (USE_CUSTOM_PERMS) checkPerms = initPerms();
 setEventHandlers(client, checkPerms);
-
-client.login(TOKEN);
+startup.onReady(() => {
+  client.login(TOKEN);
+});
+startup.run();

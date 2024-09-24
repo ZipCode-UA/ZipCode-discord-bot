@@ -7,3 +7,5 @@ const target: ILogTarget = {
     },
     targets: [LogTarget.Info, LogTarget.Error, LogTarget.Warn]
 }
+
+export default target;
