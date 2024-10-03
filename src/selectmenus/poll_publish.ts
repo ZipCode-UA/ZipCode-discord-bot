@@ -1,8 +1,9 @@
-import { ChannelSelectMenuBuilder, ChannelType, Poll, PollLayoutType } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ChannelSelectMenuBuilder, ChannelType, Poll, PollLayoutType } from "discord.js";
 import { ICommandPermission, ISelectMenu } from "../types/discord_interactions";
 import { instance as logger } from "../util/logger/logger";
 import { LogTarget } from "../types/logging";
 import { fsPollManager } from "../util/firebase/firestore/poll";
+import endPollBtn from "../buttons/poll_end";
 
 const customId = "polpblsh" as const;
 const selectmenu: ISelectMenu = {
@@ -45,22 +46,6 @@ const selectmenu: ISelectMenu = {
             return;
         }
 
-        const discordPoll: { question:{text:string},answers:{text:string}[],allowMultiselect:boolean,duration:number,layoutType:PollLayoutType } = {
-            question: { text: embed.title?.substring(0, embed.title.length - (12 + idArgs[1].length)) || "" },
-            answers: embed.fields.map(field => {
-                    return { text: field.value }; 
-                }),
-            allowMultiselect: false,
-            duration: 2,
-            layoutType: PollLayoutType.Default,
-        }
-        const pollChannel = await interaction.guild?.channels.fetch(channel.id);
-        if (!pollChannel?.isSendable()) {
-            await interaction.editReply({ content: "An invalid channel was selected!" });
-            logger.log("Invalid channel selected - not sendable", LogTarget.Error, "PollPublishSelect");
-            return;
-        }
-        await pollChannel.send({ poll: discordPoll });
         // poll: {
         //     question: { text: 'What is your favorite color?' },
         //     answers: [
@@ -72,6 +57,25 @@ const selectmenu: ISelectMenu = {
         //     duration: 2,
         //     layoutType: PollLayoutType.Default,
         //   },
+        const discordPoll: { question:{text:string},answers:{text:string}[],allowMultiselect:boolean,duration:number,layoutType:PollLayoutType } = {
+            question: { text: embed.title?.substring(0, embed.title.length - (12 + idArgs[1].length)) || "" },
+            answers: embed.fields.map(field => {
+                    return { text: field.value }; 
+                }),
+            allowMultiselect: true,
+            duration: 24,
+            layoutType: PollLayoutType.Default,
+        }
+        const pollChannel = await interaction.guild?.channels.fetch(channel.id);
+        if (!pollChannel?.isSendable()) {
+            await interaction.editReply({ content: "An invalid channel was selected!" });
+            logger.log("Invalid channel selected - not sendable", LogTarget.Error, "PollPublishSelect");
+            return;
+        }
+        const newMessage = await pollChannel.send({ poll: discordPoll, components: [new ActionRowBuilder<ButtonBuilder>().addComponents(endPollBtn.button(poll.nickname))] });
+        await fsPollManager.updatePoll(poll.nickname, newMessage.id, newMessage.channelId, "closed");
+        await message.delete();
+        await interaction.editReply({ content: "The poll should be published now!" });
 
     },
     selectMenu: (pollNick: string) => {

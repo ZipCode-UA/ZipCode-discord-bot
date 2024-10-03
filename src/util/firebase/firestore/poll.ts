@@ -13,6 +13,12 @@ type FsPoll = {
     status: FsPollStatus,
 }
 
+type FsPollResponse = {
+    pollNickname: string,
+    response: string,
+    votes: Snowflake[],
+}
+
 const MAX_POLL_RESPONSES = 10
 
 class FirestorePollManager {
@@ -20,6 +26,11 @@ class FirestorePollManager {
     private pollCollection = root.collection(FirestoreCollections.Polls).withConverter({
         toFirestore: (data: FsPoll) => data,
         fromFirestore: (snap: QueryDocumentSnapshot) => snap.data() as FsPoll,
+    });
+
+    private pollResponseCollection = root.collection(FirestoreCollections.PollResponses).withConverter({
+        toFirestore: (data: FsPollResponse) => data,
+        fromFirestore: (snap: QueryDocumentSnapshot) => snap.data() as FsPollResponse,
     });
 
     /**
@@ -31,7 +42,7 @@ class FirestorePollManager {
      * 
      * @returns The write time from the write result
      */
-    public async addPoll(messageId: string, channelId: string, nickname: string) {
+    public async addPoll(messageId: Snowflake, channelId: Snowflake, nickname: string) {
         return (await this.pollCollection.doc(nickname).set({
             messageId: messageId,
             channelId: channelId,
@@ -53,6 +64,26 @@ class FirestorePollManager {
             return;
         }
         return poll;
+    }
+
+    public async updatePoll(nickname: string, messageId: Snowflake, channelId: Snowflake, status?: FsPollStatus) {
+        return (await this.pollCollection.doc(nickname).update({
+            messageId: messageId,
+            channelId: channelId,
+            status: status,
+        })).writeTime;
+    }
+
+    public async addPollResult(nickname: string, response: string, users: Snowflake[], index: number) {
+        return (await this.pollResponseCollection.doc(`${nickname}_${index}`).set({
+            pollNickname: nickname,
+            response: response,
+            votes: users,
+        })).writeTime;
+    }
+
+    public async getPollResults(nickname: string) {
+        return (await this.pollResponseCollection.where("pollNickname", "==", nickname).get()).docs.map(doc => doc.data());
     }
 }
 
