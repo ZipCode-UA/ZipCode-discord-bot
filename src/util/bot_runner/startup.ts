@@ -171,6 +171,7 @@ function init() {
             logger.log(`Added event from file ${file}`, LogTarget.Info, "Startup");
         } catch (err) {
             logger.log(`Failed to add event from file ${file}`, LogTarget.Error, "Startup");
+            continue;
         }
     }
 

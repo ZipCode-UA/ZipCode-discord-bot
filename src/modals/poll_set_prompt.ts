@@ -14,13 +14,6 @@ const modal: IModal = {
         await interaction.deferReply({ ephemeral: true });
         const newTitle = interaction.fields.getTextInputValue(promptInputId);
         const pollNick = idArgs[1];
-        const messagePromise = fsPollManager.getPoll(pollNick).then((res) => {
-            if (!res) return undefined;
-            return interaction.guild?.channels.fetch(res.channelId).then(channel => {
-                if (!channel?.isSendable()) return undefined;
-                return channel.messages.fetch(res.messageId);
-            });
-        });
         const embed = interaction.message?.embeds[0];
         if (!embed) {
             await interaction.editReply({ content: "Failed to update poll" });
@@ -29,20 +22,12 @@ const modal: IModal = {
         }
         const currentResponses = embed.fields.map((resField) => {
             return { id: resField.name.charAt(1), response: resField.value };
-        }).filter((tuple) => tuple.id != "B") || [];
-
+        }).filter((tuple) => tuple.id != "B");
         const pBuilder = pollBuilder(pollNick, {
             title: newTitle,
-            responses: currentResponses.map((tuple) => tuple.response)
+            responses: currentResponses.length == 0 ? undefined : currentResponses.map((tuple) => tuple.response)
         });
-
-        const message = await messagePromise;
-        if (!message) {
-            await interaction.editReply({ content: "Unable to fetch poll message!" });
-            logger.log(`Failed to fetch message for poll ${pollNick}.`, LogTarget.Error, "PollSetPromptModal");
-            return;
-        }
-        await message.edit(pBuilder);
+        await interaction.message?.edit(pBuilder);
         await interaction.deleteReply();
     },
     modal: (nickname: string) => {

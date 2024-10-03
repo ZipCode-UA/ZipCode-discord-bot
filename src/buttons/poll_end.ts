@@ -29,7 +29,6 @@ const button: IButton = {
         await Promise.all(databaseResponseWritePromises);
         await interaction.message.delete();
         await interaction.editReply({ content: "Poll ended!" });
-
     },
     button: (pollNick: string) => {
         return new ButtonBuilder()

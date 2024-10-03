@@ -15,13 +15,6 @@ const modal: IModal = {
     const res = interaction.fields.getTextInputValue(responseInputId);
     const pollNick = idArgs[1];
     const responseId = idArgs[2];
-    const messagePromise = fsPollManager.getPoll(pollNick).then((res) => {
-      if (!res) return undefined;
-      return interaction.guild?.channels.fetch(res.channelId).then(channel => {
-        if (!channel?.isSendable()) return undefined;
-        return channel.messages.fetch(res.messageId);
-      });
-    });
 
     const embed = interaction.message?.embeds[0];
     if (!embed) {
@@ -32,7 +25,7 @@ const modal: IModal = {
     const currentTitle = embed.title?.substring(0, embed.title?.length - (12 + pollNick.length));
     const currentResponses = embed.fields.map((resField) => {
       return { id: resField.name.charAt(1), response: resField.value };
-    }).filter((tuple) => tuple.id != "B") || [];
+    }).filter((tuple) => tuple.id != "B").sort((a, b) => parseInt(a.id) - parseInt(b.id)) || [];
 
     let targetIndex = -1;
     for (let i = 0; i < currentResponses.length; i++) {
@@ -53,13 +46,7 @@ const modal: IModal = {
       responses: currentResponses.map((tuple) => tuple.response),
     });
 
-    const message = await messagePromise;
-    if (!message) {
-      await interaction.editReply({ content: "Unable to fetch poll message!" });
-      logger.log(`Failed to fetch message for poll ${pollNick}.`, LogTarget.Error, "PollSetResponseModal");
-      return;
-    }
-    await message.edit(pBuilder);
+    await interaction.message?.edit(pBuilder);
     await interaction.deleteReply();
   },
   modal: (nickname: string, responseId: string) => {

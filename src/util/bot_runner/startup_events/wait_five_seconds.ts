@@ -11,9 +11,9 @@ const event: IStartupEvent = {
                 logger.log("waited 5 seconds!", LogTarget.Info, "Wait5Sec");
                 resolve(true);
             }, 5000);
-        })
+        });
     },
-    useEvent: true,
+    useEvent: false,
 }
 
 export default event;
