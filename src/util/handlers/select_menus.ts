@@ -58,7 +58,7 @@ const eventHandler: IDiscordEventHandler = {
                 }
             } 
 
-            await cmd.execute(cmdInteraction, []);
+            await cmd.execute(cmdInteraction, idArgs);
         }
     },
     useHandler: true,
