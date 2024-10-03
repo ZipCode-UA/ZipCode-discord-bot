@@ -16,7 +16,6 @@ const eventHandler: IDiscordEventHandler = {
                 return readdirSync(path).filter(file => file.endsWith(".js"));
             } catch (err) {
                 return [];
-
             }
         }).call(this);
         if (files.length == 0) return async (interaction: Interaction) => {

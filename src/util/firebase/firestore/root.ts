@@ -5,6 +5,7 @@ export enum FirestoreCollections {
     ClubRoster="roster",
     Polls="poll",
     PollResponses="pollres",
+    InternalTrackers="internal"
 }
 
 // Firestore root to be used for all Firestore accesss

@@ -8,6 +8,7 @@
     "bot-dev": "dotenvx run -f .env.pub -f .env.dev -- node bot/main.js",
     "deploy-dev": "dotenvx run -f .env.pub -f .env.dev -- node bot/deploy_dev_commands.js",
     "deploy-global": "dotenvx run -f .env.prod -- node bot/deploy_commands_global.js",
+    "clear-dev": "detenvx run -f .env.pub -f .env.dev -- node bot/clear_local_guild_commands.js",
     "build": "rm -rf ./bot/ && tsc"
   },
   "keywords": [
@@ -24,9 +25,8 @@
   "dependencies": {
     "@dotenvx/dotenvx": "^1.14.1",
     "child_process": "^1.0.2",
-    "discord.js": "^14.13.0",
+    "discord.js": "^14.16.3",
     "discordjs-bot": "file:",
-    "firebase": "^10.13.2",
     "firebase-admin": "^12.5.0"
   }
 }

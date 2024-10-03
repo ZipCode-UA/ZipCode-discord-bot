@@ -19,9 +19,14 @@ export function initPerms(): PermChecker {
 
     const permFiles = readdirSync(join(__dirname, permsDirectory)).filter(file => file.endsWith(".js"));
     for (const file of permFiles) {
-        logger.log(`Reading file ${file}`, LogTarget.Info, "Permissions");
-        const perm = require(join(__dirname, `${permsDirectory}/${file}`)).default as IPermission;
-        permMap.set(perm.permLevel, perm.permCheck);
+        try {
+            logger.log(`Reading file ${file}`, LogTarget.Info, "Permissions");
+            const perm = require(join(__dirname, `${permsDirectory}/${file}`)).default as IPermission;
+            permMap.set(perm.permLevel, perm.permCheck);
+        } catch (err) {
+            logger.log(`Error from file ${file}`, LogTarget.Error, "Permissions");
+        }
+        
     }
 
     return async (permissionLevel: ICommandPermission, interaction: Interaction) => {

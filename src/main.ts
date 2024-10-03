@@ -18,6 +18,7 @@ const intent_flags = [
   GatewayIntentBits.GuildMessageReactions,
   GatewayIntentBits.GuildMessageTyping,
   GatewayIntentBits.GuildPresences,
+  GatewayIntentBits.GuildMessagePolls,
   GatewayIntentBits.DirectMessages,
   GatewayIntentBits.DirectMessageReactions,
   GatewayIntentBits.DirectMessageTyping,

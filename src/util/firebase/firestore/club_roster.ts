@@ -1,6 +1,7 @@
-import { collection, getDocs, QueryDocumentSnapshot } from "firebase/firestore";
+import { QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { FirestoreCollections, root } from "./root";
 import { Snowflake } from "discord.js";
+import { instance as logger } from "../../logger/logger";
 
 enum ClubRosterPermissionsFlags {
     ManageMembers=1,
@@ -14,17 +15,35 @@ type ClubRosterDoc = {
     lastName: string,
     discordId: Snowflake,
     uakronEmail: string,
+    uakronStudentId: string,
     perms: number,
 }
 
 class FirestoreClubRosterManager {
-    private collection = collection(root, FirestoreCollections.ClubRoster).withConverter({
-        toFirestore: (datum: ClubRosterDoc) => datum,
-        fromFirestore: (snapshot: QueryDocumentSnapshot) => snapshot.data() as ClubRosterDoc
+
+    private collection = root.collection(FirestoreCollections.ClubRoster).withConverter({
+        toFirestore: (data: ClubRosterDoc) => data,
+        fromFirestore: (snap: QueryDocumentSnapshot) => snap.data() as ClubRosterDoc,
     });
 
-    async getRoster() {
-        return await getDocs(this.collection);
+    public async getRoster() {
+        return (await this.collection.get()).docs.map(doc => doc.data());
+    }
+
+    public async createRosterMember(firstName: string, lastName: string, discordId: Snowflake, uakronEmail: string, uakronStudentId: string, perms: number) {
+        const docRef = this.collection.doc(uakronStudentId);
+        if ((await docRef.get()).exists) {
+            
+        }
+        
+    }
+
+    public async updateRosterMember(firstName: string, lastName: string, discordId: Snowflake, uakronEmail: string, uakronStudentId: string, perms: number) {
+
+    }
+
+    public async removeRosterMember(uakronStudentId: string) {
+
     }
 }
 
