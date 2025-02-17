@@ -14,6 +14,6 @@
  * 
  * @param[in, out] bot Bot instance
  */
-int registerSlashCommands(dpp::cluster& bot);
+int register_slash_commands(dpp::cluster& bot);
 
 #endif

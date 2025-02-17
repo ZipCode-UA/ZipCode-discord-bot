@@ -22,7 +22,7 @@ void add_commands_to_buffer(std::vector<dpp::slashcommand>& command_buffer, cons
  * 
  * @param[in, out] bot Bot instance
  */
-int registerSlashCommands(dpp::cluster& bot) {
+int register_slash_commands(dpp::cluster& bot) {
     
     // Clear old commands
     bot.global_bulk_command_delete();
