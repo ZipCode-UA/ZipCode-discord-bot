@@ -1,3 +1,4 @@
+# JS/TS Ignores
 node_modules/
 lib/
 test_script.js
@@ -7,3 +8,10 @@ test_script.js
 .idea
 gui/discordbotgui/target/
 bot/
+
+# CMake Ignores
+build
+cmake
+
+# IDE: VSCode Ignores
+.vscode
