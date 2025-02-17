@@ -5,7 +5,7 @@
  */
 
 #include <cstdlib>
-#include <dpp/dpp.h>
+#include <dpp/cluster.h>
 #include <iostream>
 #include <string>
 
