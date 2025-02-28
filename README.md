@@ -12,5 +12,5 @@ GUILD_ID=replace_me
 cmake . -B build
 cmake --build build
 
-dotenvx -- build/ZipCode-Bot
+dotenvx run -- build/ZipCode-Bot
 ```
