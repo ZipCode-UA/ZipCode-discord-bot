@@ -6,6 +6,8 @@
 
 namespace ZipCode {
 
+    // Singleton class. Read about them here: 
+    // https://www.geeksforgeeks.org/implementation-of-singleton-class-in-cpp/
     class DiscordBot {
         private:
             dpp::cluster *bot;
