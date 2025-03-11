@@ -1,2 +1,5 @@
 build
 .env
+
+# Ignore IDE: VS Code
+.vscode
