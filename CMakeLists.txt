@@ -28,3 +28,11 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_STANDARD_REQUIRED ON
 )
 
+add_custom_target(run 
+        COMMENT "Run the bot"
+        MESSAGE "Running bot..."
+        COMMAND dotenvx run build/${PROJECT_NAME}
+        DEPENDS ${PROJECT_NAME}
+        USES_TERMINAL
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)
