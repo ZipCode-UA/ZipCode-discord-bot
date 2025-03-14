@@ -1,14 +1,15 @@
 #include <dpp/cache.h>
+#include <dpp/coro/async.h>
 #include <dpp/dpp.h>
 #include "SetColorCommand.h"
 #include "DiscordBot.h"
 
 
 namespace SetColorCommand {
-    void setColorCommand(const dpp::slashcommand_t &event) {
+    dpp::task<void> setColorCommand(const dpp::slashcommand_t &event) {
         dpp::cluster *bot = ZipCode::DiscordBot::getInstance()->getCluster();
 
-        if (event.command.get_command_name() != "set-color") return;
+        if (event.command.get_command_name() != "set-color") co_return;
 
         std::string colorStr = event.command.
             get_command_interaction().
@@ -21,8 +22,19 @@ namespace SetColorCommand {
         dpp::role role;
 		role.set_name("null");
 
-        for (const auto &roleSnowflake : guild.roles) {
-			const dpp::role role_copy = *dpp::find_role(roleSnowflake);	
+        std::string err = "";
+
+        const dpp::confirmation_callback_t guildRolesConfirmation = co_await bot->co_roles_get(event.command.guild_id);
+
+        if (guildRolesConfirmation.is_error()) {
+            event.reply("Error: Could not retrieve server's roles");
+            co_return;
+        }
+
+        const dpp::role_map guildRoles = guildRolesConfirmation.get<dpp::role_map>();
+
+        for (const auto &guildRole : guildRoles) {
+			const dpp::role role_copy = guildRole.second;	
             if (role_copy.name == user.user_id.str()) {
 				role = role_copy;
                 break;
@@ -37,7 +49,7 @@ namespace SetColorCommand {
 
         if (colorStr.length() != 6) {
             event.reply("Error: Invalid length for hex code. Do not include an alpha channel");
-            return;
+            co_return;
         }
         
         uint32_t color = std::stoi(colorStr, nullptr, 16);
@@ -64,7 +76,7 @@ namespace SetColorCommand {
 
         user = user.add_role(role.id);
 
-        std::string err = "";
+        
 
         bot->guild_edit_member(user, [&err](const dpp::confirmation_callback_t &ev) {
             if (ev.is_error()) {

@@ -2,5 +2,5 @@
 
 
 namespace SetColorCommand {
-    void setColorCommand(const dpp::slashcommand_t&);
+    dpp::task<void> setColorCommand(const dpp::slashcommand_t&);
 }
