@@ -7,7 +7,6 @@
 namespace SetColorCommand {
     void setColorCommand(const dpp::slashcommand_t &event) {
         dpp::cluster *bot = ZipCode::DiscordBot::getInstance()->getCluster();
-        const std::string GUILD_ID = std::getenv("GUILD_ID");
 
         if (event.command.get_command_name() != "set-color") return;
 
@@ -19,26 +18,19 @@ namespace SetColorCommand {
 
         dpp::guild_member user = dpp::find_guild_member(event.command.guild_id,
                                                          event.command.usr.id);
-
-        dpp::role *rolePtr = nullptr;
+        dpp::role role;
+		role.set_name("null");
 
         for (const auto &roleSnowflake : guild.roles) {
-            rolePtr = dpp::find_role(roleSnowflake);
-            if (rolePtr->name != user.user_id.str()) {
-                rolePtr = nullptr;
-                continue;
+			const dpp::role role_copy = *dpp::find_role(roleSnowflake);	
+            if (role_copy.name == user.user_id.str()) {
+				role = role_copy;
+                break;
             }
-
-            break;
         }
 
-        bool roleExisted = true;
+        bool roleExisted = role.name != "null";
         
-        if (rolePtr == nullptr) {
-            roleExisted = false;
-            rolePtr = new dpp::role();
-        }
-
         if (colorStr.starts_with('#')) {
             colorStr = colorStr.substr(1);
         }
@@ -50,42 +42,32 @@ namespace SetColorCommand {
         
         uint32_t color = std::stoi(colorStr, nullptr, 16);
 
-        rolePtr->set_color(color);
-
-        dpp::role role;
+        role.set_color(color);
 
         bool wait = true;
 
         if (roleExisted) {
-            bot->role_edit(*rolePtr);
+            bot->role_edit(role);
         } else {
-            rolePtr->set_guild_id(guild.id);
-            rolePtr->set_name(user.user_id.str());
-            bot->role_create(*rolePtr, [&role, &wait](const dpp::confirmation_callback_t &ev) {
+            role.set_guild_id(guild.id);
+            role.set_name(user.user_id.str());
+            bot->role_create(role, [&role, &wait](const dpp::confirmation_callback_t &ev) {
                 if (!ev.is_error()) {
                     role = std::get<dpp::role>(ev.value);
                 }
+
                 wait = false;
             });
 
             while (wait) {}
         }
 
-        rolePtr = &role;
-        
-        user = user.add_role(rolePtr->id);
-
-        std::cout << "USER: " << user.get_nickname() << std::endl;
-        for (const auto &r : user.get_roles()) {
-            std::cout << r.str() << std::endl;
-        }
+        user = user.add_role(role.id);
 
         std::string err = "";
 
         bot->guild_edit_member(user, [&err](const dpp::confirmation_callback_t &ev) {
             if (ev.is_error()) {
-                const dpp::cluster *bot = ev.bot;
-
                 err = ev.get_error().human_readable;
             }
         });
