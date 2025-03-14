@@ -15,26 +15,22 @@ namespace SetColorCommand {
             get_command_interaction().
             get_value<std::string>(0);
 
-        dpp::guild guild = event.command.get_guild();
-
         dpp::guild_member user = dpp::find_guild_member(event.command.guild_id,
                                                          event.command.usr.id);
         dpp::role role;
 		role.set_name("null");
 
-        std::string err = "";
-
         const dpp::confirmation_callback_t guildRolesConfirmation = co_await bot->co_roles_get(event.command.guild_id);
 
         if (guildRolesConfirmation.is_error()) {
-            event.reply("Error: Could not retrieve server's roles");
+            co_await event.co_reply("Error: Could not retrieve server's roles because " + guildRolesConfirmation.get_error().human_readable);
             co_return;
         }
 
         const dpp::role_map guildRoles = guildRolesConfirmation.get<dpp::role_map>();
 
         for (const auto &guildRole : guildRoles) {
-			const dpp::role role_copy = guildRole.second;	
+			dpp::role role_copy = *dpp::find_role(guildRole.first);	
             if (role_copy.name == user.user_id.str()) {
 				role = role_copy;
                 break;
@@ -48,7 +44,7 @@ namespace SetColorCommand {
         }
 
         if (colorStr.length() != 6) {
-            event.reply("Error: Invalid length for hex code. Do not include an alpha channel");
+            co_await event.co_reply("Error: Invalid length for hex code. Do not include an alpha channel");
             co_return;
         }
         
@@ -59,9 +55,15 @@ namespace SetColorCommand {
         bool wait = true;
 
         if (roleExisted) {
-            bot->role_edit(role);
+            const dpp::confirmation_callback_t roleEditConfirmation = co_await bot->co_role_edit(role);
+
+            if (roleEditConfirmation.is_error()) {
+                co_await event.co_reply("Error: Couldn't edit your role because " + roleEditConfirmation.get_error().human_readable);
+                co_return;
+            }
+            
         } else {
-            role.set_guild_id(guild.id);
+            role.set_guild_id(event.command.guild_id);
             role.set_name(user.user_id.str());
             bot->role_create(role, [&role, &wait](const dpp::confirmation_callback_t &ev) {
                 if (!ev.is_error()) {
@@ -72,22 +74,17 @@ namespace SetColorCommand {
             });
 
             while (wait) {}
-        }
 
-        user = user.add_role(role.id);
+            user = user.add_role(role.id);
 
-        
+            const auto guildMemberEditConfirmation = co_await bot->co_guild_edit_member(user);   
 
-        bot->guild_edit_member(user, [&err](const dpp::confirmation_callback_t &ev) {
-            if (ev.is_error()) {
-                err = ev.get_error().human_readable;
+            if (guildMemberEditConfirmation.is_error()) {
+                co_await event.co_reply("Error: Could not add role to you because " + guildMemberEditConfirmation.get_error().human_readable);
+                co_return;
             }
-        });
-
-        if (err != "") {
-            event.reply("Failed to update your color because: " + err);
-        } else {
-            event.reply("Your color has been updated!");
         }
+
+        co_await event.co_reply("Successfully changed your color");
     }
 }
