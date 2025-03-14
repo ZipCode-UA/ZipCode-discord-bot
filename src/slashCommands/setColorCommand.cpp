@@ -65,16 +65,15 @@ namespace SetColorCommand {
         } else {
             role.set_guild_id(event.command.guild_id);
             role.set_name(user.user_id.str());
-            bot->role_create(role, [&role, &wait](const dpp::confirmation_callback_t &ev) {
-                if (!ev.is_error()) {
-                    role = std::get<dpp::role>(ev.value);
-                }
+            const dpp::confirmation_callback_t roleCreateConfirmation = co_await bot->co_role_create(role);
 
-                wait = false;
-            });
-
-            while (wait) {}
-
+            if (roleCreateConfirmation.is_error()) {
+                co_await event.co_reply("Error: Could not create your role because " + roleCreateConfirmation.get_error().human_readable);
+                co_return;
+            }
+            
+            role = roleCreateConfirmation.get<dpp::role>();
+            
             user = user.add_role(role.id);
 
             const auto guildMemberEditConfirmation = co_await bot->co_guild_edit_member(user);   
