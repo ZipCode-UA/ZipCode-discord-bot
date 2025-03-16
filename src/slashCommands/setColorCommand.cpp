@@ -69,6 +69,7 @@ namespace SetColorCommand {
         try {
             color = std::stoi(colorStr, nullptr, 16);
         } catch (const std::invalid_argument &ex) {
+            // propagate errors up since co_return cannot be called within a try catch block 
             err = "invalid_argument";
         } catch (const std::out_of_range &ex) {
             err = "out_of_range";
